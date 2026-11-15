@@ -1,0 +1,8 @@
+/assets/
+/data/
+/runs/
+/outputs/
+/.baseline-cache/
+__pycache__/
+*.pth
+*.pt
