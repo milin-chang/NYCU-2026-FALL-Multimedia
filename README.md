@@ -64,6 +64,19 @@ python baseline.py train --data data/ffhq --run runs/baseline --steps 100000 --b
 | `last.pth` | 最近一次驗證的 G、EMA、D、optimizer、精度設定和 RNG 狀態 |
 | `best.pth` | 微調後 validation LPIPS 最低的 EMA 權重與對應步數 |
 
+### 在新機器測試 batch size
+
+先執行 `python prepare.py assets`，再在目標 GPU 空閒時測試。探測會使用合成 LR/HR patch 跑同一個訓練步驟，包括 SwinIR 生成器、U-Net 判別器、VGG19 feature loss、反向傳播、Adam 更新及 EMA。每個候選 batch 也會試跑一張驗證尺寸的影像與 LPIPS，並以新的 Python 程序隔離 CUDA 記憶體。首次執行可能需要下載 VGG19 和 AlexNet 權重。探測過程不寫入訓練 checkpoint。
+
+```sh
+python probe_batch.py --device cuda:0 --max-batch 32 --steps 5
+python probe_batch.py --device cuda:0 --batch 1 --steps 10
+```
+
+第一個指令會加倍測試直到 CUDA OOM 或到達上限，再縮小搜尋範圍。`largest_passing_batch` 是通過的最大測試值。若 `reached_search_limit` 為 `true`，可提高 `--max-batch` 繼續測。第二個指令可在不同機器以相同 batch 比較。輸出包含 `seconds_per_step`、`images_per_sec`、PyTorch 已配置及保留顯存的各自峰值，以及測試開始時 CUDA 回報的可用顯存。若正式訓練使用 `--fp32` 或 `--activation-checkpoint`，探測時也加上相同旗標。
+
+探測時間只包括張量已在 GPU 上的訓練步驟。要估算實際時數，可另用同一份 FFHQ manifest 跑約 200 步，比較 `events.jsonl` 的 step 100 與 step 200 時差，再加上定期驗證及 checkpoint 時間。最大可用 batch 和最高 `images_per_sec` 的 batch 可能不同。固定 100,000 steps 時，batch 4 會處理 batch 1 四倍的訓練 patch。跨分支做受控比較時固定 batch 和 steps。
+
 ## 5. 推論與測試
 
 對單張 LR 檔案或一個 LR 資料夾推論。`--tile` 以 LR 像素為單位，須為 8 的倍數，使用 `--tile 0` 時會整張推論。

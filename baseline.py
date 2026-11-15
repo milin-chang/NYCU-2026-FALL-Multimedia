@@ -133,11 +133,61 @@ def append_log(path, event, **values):
         stream.write(line + '\n')
 
 
-def train(args, device):
-    upstream('kair')
-    from models.loss import GANLoss, PerceptualLoss
-    from models.select_network import define_D
+class GanTraining:
+    ema_decay = 0.999
 
+    def __init__(self, args, device):
+        upstream('kair')
+        from models.loss import GANLoss, PerceptualLoss
+        from models.select_network import define_D
+
+        self.device_type = device.type
+        self.amp = False
+        if device.type == 'cuda' and not args.fp32:
+            with torch.cuda.device(device):
+                self.amp = torch.cuda.is_bf16_supported()
+        self.model = generator(args.activation_checkpoint).to(device)
+        self.model.load_state_dict(load_generator(args.weights), strict=True)
+        self.ema = copy.deepcopy(self.model).requires_grad_(False).eval()
+        self.discriminator = define_D({'netD': {'net_type': 'discriminator_unet', 'in_nc': 3, 'base_nc': 64,
+                                                'init_type': 'orthogonal', 'init_bn_type': 'uniform',
+                                                'init_gain': 0.2}}).to(device)
+        self.feature_loss = PerceptualLoss().requires_grad_(False).eval().to(device)
+        self.adversarial = GANLoss('gan').to(device)
+        self.opt_g = torch.optim.Adam(self.model.parameters(), lr=args.g_lr)
+        self.opt_d = torch.optim.Adam(self.discriminator.parameters(), lr=args.d_lr)
+
+    def step(self, lr, hr, step):
+        self.discriminator.requires_grad_(False)
+        self.opt_g.zero_grad(set_to_none=True)
+        with torch.autocast(self.device_type, dtype=torch.bfloat16, enabled=self.amp):
+            sr = self.model(lr)
+            pixel = F.l1_loss(sr, hr)
+            feature = self.feature_loss(sr, hr)
+            gan = self.adversarial(self.discriminator(sr), True)
+            loss_g = pixel + feature + 0.1 * gan
+        if not loss_g.isfinite().item():
+            raise FloatingPointError(f'Non-finite generator loss at step {step}.')
+        loss_g.backward()
+        self.opt_g.step()
+
+        self.discriminator.requires_grad_(True)
+        self.opt_d.zero_grad(set_to_none=True)
+        with torch.autocast(self.device_type, dtype=torch.bfloat16, enabled=self.amp):
+            d_real = self.adversarial(self.discriminator(hr), True)
+            d_fake = self.adversarial(self.discriminator(sr.detach()), False)
+            loss_d = d_real + d_fake
+        if not loss_d.isfinite().item():
+            raise FloatingPointError(f'Non-finite discriminator loss at step {step}.')
+        loss_d.backward()
+        self.opt_d.step()
+        with torch.no_grad():
+            torch._foreach_lerp_(list(self.ema.parameters()), list(self.model.parameters()), 1 - self.ema_decay)
+        return {'pixel': pixel.detach(), 'feature': feature.detach(), 'gan': gan.detach(),
+                'g_total': loss_g.detach(), 'd_real': d_real.detach(), 'd_fake': d_fake.detach()}
+
+
+def train(args, device):
     seed_model()
     data = manifest(args.data)
     if args.batch > len(data['train']):
@@ -146,20 +196,14 @@ def train(args, device):
     last = args.run / 'last.pth'
     if not args.resume and (last.exists() or log.exists()):
         raise FileExistsError('Use --resume for a previous run or choose a new --run directory.')
-    amp = device.type == 'cuda' and torch.cuda.is_bf16_supported() and not args.fp32
+    training = GanTraining(args, device)
     config = {'seed': SEED, 'swinir_ref': SWINIR_REF, 'kair_ref': KAIR_REF,
               'manifest_sha256': sha256(args.data / 'manifest.json'), 'weight_sha256': sha256(args.weights),
-              'batch': args.batch, 'g_lr': args.g_lr, 'd_lr': args.d_lr, 'precision': 'bf16' if amp else 'fp32',
-              'ema_decay': 0.999, 'loss_weights': [1., 1., 0.1]}
-    model = generator(args.activation_checkpoint).to(device)
-    model.load_state_dict(load_generator(args.weights), strict=True)
-    ema = copy.deepcopy(model).requires_grad_(False).eval()
-    discriminator = define_D({'netD': {'net_type': 'discriminator_unet', 'in_nc': 3, 'base_nc': 64,
-                                       'init_type': 'orthogonal', 'init_bn_type': 'uniform', 'init_gain': 0.2}}).to(device)
-    feature_loss = PerceptualLoss().requires_grad_(False).eval().to(device)
-    adversarial = GANLoss('gan').to(device)
-    opt_g = torch.optim.Adam(model.parameters(), lr=args.g_lr)
-    opt_d = torch.optim.Adam(discriminator.parameters(), lr=args.d_lr)
+              'batch': args.batch, 'g_lr': args.g_lr, 'd_lr': args.d_lr,
+              'precision': 'bf16' if training.amp else 'fp32',
+              'ema_decay': training.ema_decay, 'loss_weights': [1., 1., 0.1]}
+    model, ema, discriminator = training.model, training.ema, training.discriminator
+    opt_g, opt_d = training.opt_g, training.opt_d
     metrics = perceptual_metrics(device)
     start, best = 0, float('inf')
     if args.resume:
@@ -193,35 +237,10 @@ def train(args, device):
         torch.cuda.reset_peak_memory_stats(device)
     for step, (lr, hr) in enumerate(loader, start + 1):
         lr, hr = lr.to(device, non_blocking=True), hr.to(device, non_blocking=True)
-        discriminator.requires_grad_(False)
-        opt_g.zero_grad(set_to_none=True)
-        with torch.autocast(device.type, dtype=torch.bfloat16, enabled=amp):
-            sr = model(lr)
-            pixel = F.l1_loss(sr, hr)
-            feature = feature_loss(sr, hr)
-            gan = adversarial(discriminator(sr), True)
-            loss_g = pixel + feature + 0.1 * gan
-        if not loss_g.isfinite().item():
-            raise FloatingPointError(f'Non-finite generator loss at step {step}.')
-        loss_g.backward()
-        opt_g.step()
-
-        discriminator.requires_grad_(True)
-        opt_d.zero_grad(set_to_none=True)
-        with torch.autocast(device.type, dtype=torch.bfloat16, enabled=amp):
-            d_real = adversarial(discriminator(hr), True)
-            d_fake = adversarial(discriminator(sr.detach()), False)
-            loss_d = d_real + d_fake
-        if not loss_d.isfinite().item():
-            raise FloatingPointError(f'Non-finite discriminator loss at step {step}.')
-        loss_d.backward()
-        opt_d.step()
-        with torch.no_grad():
-            torch._foreach_lerp_(list(ema.parameters()), list(model.parameters()), 1 - config['ema_decay'])
+        losses = training.step(lr, hr, step)
 
         if step == start + 1 or step % args.log_every == 0 or step == args.steps:
-            append_log(log, 'train', step=step, pixel=pixel.item(), feature=feature.item(), gan=gan.item(),
-                       g_total=loss_g.item(), d_real=d_real.item(), d_fake=d_fake.item(),
+            append_log(log, 'train', step=step, **{name: loss.item() for name, loss in losses.items()},
                        elapsed_s=round(time.monotonic() - began, 2),
                        peak_vram_mib=round(torch.cuda.max_memory_allocated(device) / 1048576, 1)
                        if device.type == 'cuda' else None)
