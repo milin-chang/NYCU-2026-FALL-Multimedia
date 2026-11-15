@@ -1,0 +1,7 @@
+numpy
+Pillow
+torch==2.15.0
+piq==0.8.0
+pyiqa==0.1.16
+sewar==0.4.10
+pypiqe==1.2

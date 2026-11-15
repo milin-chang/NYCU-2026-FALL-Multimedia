@@ -1,0 +1,21 @@
+metric,score,direction,images,status
+PSNR,35.38633728027344,higher,HR vs bicubic x4,ok
+SSIM,0.9952800869941711,higher,HR vs bicubic x4,ok
+MS-SSIM,0.982236921787262,higher,HR vs bicubic x4,ok
+FSIM,0.9971606731414795,higher,HR vs bicubic x4,ok
+FSIMc,0.9971351623535156,higher,HR vs bicubic x4,ok
+GMSD,0.049318064004182816,lower,HR vs bicubic x4,ok
+MDSI,0.1642882525920868,lower,HR vs bicubic x4,ok
+VIFp,0.447024941444397,higher,HR vs bicubic x4,ok
+SR-SIM,0.9978677034378052,higher,HR vs bicubic x4,ok
+VSI,0.998224139213562,higher,HR vs bicubic x4,ok
+UQI,0.9983452622106547,higher,HR vs bicubic x4,ok
+PIQE (original),9.845726958456082,lower,HR only,ok
+PIQE (bicubic x4),84.66998585625066,lower,bicubic x4 only,ok
+VIF,0.3652973175048828,higher,HR vs bicubic x4,ok
+CW-SSIM,0.9973810808950196,higher,HR vs bicubic x4,ok
+IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected

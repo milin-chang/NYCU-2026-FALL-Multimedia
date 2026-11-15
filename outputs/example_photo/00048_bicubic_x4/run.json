@@ -1,0 +1,162 @@
+{
+  "source": "example_photo/00048.png",
+  "source_size": [
+    1024,
+    1024
+  ],
+  "scale": 4,
+  "downsample": "Pillow BICUBIC 1024 -> 256",
+  "upsample": "Pillow BICUBIC 256 -> 1024",
+  "torch": "2.15.0+cpu",
+  "piq": "0.8.0",
+  "source_sha256": "01563ead1438c0538bacc709988c4fd3f4539a4f43b55b4795923ce6d97fe1ba",
+  "bicubic_sha256": "c732b03966d4e1821322cb3b51ac775faad77fcb3ed865d49959c20768643f6a",
+  "implementations": {
+    "PSNR, SSIM, MS-SSIM, FSIM, FSIMc, GMSD, MDSI, VIFp, SR-SIM, VSI": "piq 0.8.0",
+    "UQI": "sewar 0.4.10",
+    "PIQE": "pypiqe 1.2",
+    "VIF, CW-SSIM": "pyiqa 0.1.16"
+  },
+  "scores": [
+    {
+      "metric": "PSNR",
+      "score": 35.458431243896484,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "SSIM",
+      "score": 0.9927315711975098,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "MS-SSIM",
+      "score": 0.9762067794799805,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "FSIM",
+      "score": 0.9973302483558655,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "FSIMc",
+      "score": 0.9973036646842957,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "GMSD",
+      "score": 0.046260956674814224,
+      "direction": "lower",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "MDSI",
+      "score": 0.15677320957183838,
+      "direction": "lower",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "VIFp",
+      "score": 0.45134273171424866,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "SR-SIM",
+      "score": 0.9982256889343262,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "VSI",
+      "score": 0.9984967112541199,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "UQI",
+      "score": 0.9963039783829793,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "PIQE (original)",
+      "score": 13.750204535376904,
+      "direction": "lower",
+      "images": "HR only",
+      "status": "ok"
+    },
+    {
+      "metric": "PIQE (bicubic x4)",
+      "score": 78.18214952498604,
+      "direction": "lower",
+      "images": "bicubic x4 only",
+      "status": "ok"
+    },
+    {
+      "metric": "VIF",
+      "score": 0.34386444091796875,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "CW-SSIM",
+      "score": 0.9952816556210875,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "IFC",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "SPSIM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "RFSIM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "VSNR-FR",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "GSM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    }
+  ]
+}

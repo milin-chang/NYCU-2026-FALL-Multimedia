@@ -1,0 +1,162 @@
+{
+  "source": "example_photo/00061.png",
+  "source_size": [
+    1024,
+    1024
+  ],
+  "scale": 4,
+  "downsample": "Pillow BICUBIC 1024 -> 256",
+  "upsample": "Pillow BICUBIC 256 -> 1024",
+  "torch": "2.15.0+cpu",
+  "piq": "0.8.0",
+  "source_sha256": "cadf3c8e12148660486e4c1a686a8350bd6c3739a85b06605f64c08efba2b34d",
+  "bicubic_sha256": "f9551ffcaf3e9a627d5b1ff8ded7d3f3b7d6f7c3f0c34168ff87e84de3becbf6",
+  "implementations": {
+    "PSNR, SSIM, MS-SSIM, FSIM, FSIMc, GMSD, MDSI, VIFp, SR-SIM, VSI": "piq 0.8.0",
+    "UQI": "sewar 0.4.10",
+    "PIQE": "pypiqe 1.2",
+    "VIF, CW-SSIM": "pyiqa 0.1.16"
+  },
+  "scores": [
+    {
+      "metric": "PSNR",
+      "score": 31.29124641418457,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "SSIM",
+      "score": 0.988490879535675,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "MS-SSIM",
+      "score": 0.961010754108429,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "FSIM",
+      "score": 0.9953433871269226,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "FSIMc",
+      "score": 0.9953253865242004,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "GMSD",
+      "score": 0.07711230963468552,
+      "direction": "lower",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "MDSI",
+      "score": 0.1929118037223816,
+      "direction": "lower",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "VIFp",
+      "score": 0.3713211119174957,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "SR-SIM",
+      "score": 0.9958508610725403,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "VSI",
+      "score": 0.9969518780708313,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "UQI",
+      "score": 0.9981066727540083,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "PIQE (original)",
+      "score": 11.392994909772142,
+      "direction": "lower",
+      "images": "HR only",
+      "status": "ok"
+    },
+    {
+      "metric": "PIQE (bicubic x4)",
+      "score": 85.4174205361164,
+      "direction": "lower",
+      "images": "bicubic x4 only",
+      "status": "ok"
+    },
+    {
+      "metric": "VIF",
+      "score": 0.28457990288734436,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "CW-SSIM",
+      "score": 0.9990872194474502,
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "ok"
+    },
+    {
+      "metric": "IFC",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "SPSIM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "RFSIM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "VSNR-FR",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    },
+    {
+      "metric": "GSM",
+      "score": "",
+      "direction": "higher",
+      "images": "HR vs bicubic x4",
+      "status": "not_computed: no verified implementation selected"
+    }
+  ]
+}
