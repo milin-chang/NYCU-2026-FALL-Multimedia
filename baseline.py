@@ -18,8 +18,8 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from torch.utils.data import DataLoader, Dataset, Sampler
 
 from prepare import DEFAULT_DATA, sha256
-from sr import (KAIR_REF, SEED, SWINIR_REF, WEIGHT, WINDOW, degrade, generator, image_tensor,
-                load_generator, read_rgb, rgb8, upscale, upstream)
+from sr import (KAIR_REF, SEED, SWINIR_REF, WEIGHT, WINDOW, build_generator, degrade, image_tensor,
+                read_rgb, rgb8, upscale, upstream)
 
 
 class TrainImages(Dataset):
@@ -147,8 +147,7 @@ class GanTraining:
         if device.type == 'cuda' and not args.fp32:
             with torch.cuda.device(device):
                 self.amp = torch.cuda.is_bf16_supported()
-        self.model = generator(args.activation_checkpoint).to(device)
-        self.model.load_state_dict(load_generator(args.weights), strict=True)
+        self.model = build_generator(args.weights, args.activation_checkpoint, args.fft).to(device)
         self.ema = copy.deepcopy(self.model).requires_grad_(False).eval()
         self.discriminator = define_D({'netD': {'net_type': 'discriminator_unet', 'in_nc': 3, 'base_nc': 64,
                                                 'init_type': 'orthogonal', 'init_bn_type': 'uniform',
@@ -203,6 +202,8 @@ def train(args, device):
               'batch': args.batch, 'g_lr': args.g_lr, 'd_lr': args.d_lr,
               'precision': 'bf16' if training.amp else 'fp32',
               'ema_decay': training.ema_decay, 'loss_weights': [1., 1., 0.1]}
+    if hasattr(training.model.patch_unembed, 'fft_branch'):
+        config['fft'] = True
     model, ema, discriminator = training.model, training.ema, training.discriminator
     opt_g, opt_d = training.opt_g, training.opt_d
     metrics = perceptual_metrics(device)
@@ -276,8 +277,7 @@ def evaluate_split(args, device):
                 raise ValueError('Existing report metadata differs from the requested weights, split, or tile.')
             source = args.out
         else:
-            model = generator().eval().to(device)
-            model.load_state_dict(load_generator(args.weights), strict=True)
+            model = build_generator(args.weights).eval().to(device)
             evaluate(model, args.data, args.split, rows, perceptual_metrics(device, full=True),
                      device, args.tile, stage)
             del model
@@ -300,8 +300,7 @@ def evaluate_split(args, device):
 
 
 def inference(args, device):
-    model = generator().eval().to(device)
-    model.load_state_dict(load_generator(args.weights), strict=True)
+    model = build_generator(args.weights).eval().to(device)
     extensions = {'.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tif', '.tiff'}
     images = [args.input] if args.input.is_file() else sorted(
         path for path in args.input.iterdir() if path.is_file() and path.suffix.lower() in extensions)
@@ -338,6 +337,7 @@ def main():
     fit.add_argument('--val-every', type=int, default=5000)
     fit.add_argument('--activation-checkpoint', action='store_true')
     fit.add_argument('--fp32', action='store_true')
+    fit.add_argument('--fft', action='store_true', help='Add a zero-initialized FFT residual branch')
     fit.add_argument('--resume', action='store_true')
     infer = commands.add_parser('infer', parents=[common])
     infer.add_argument('--input', type=Path, required=True)

@@ -109,3 +109,16 @@ python baseline.py evaluate --data data/ffhq --split test --weights runs/baselin
 首次算 FID 或 KID 會下載 Inception-v3 權重。集合少於 2 張時，FID 和 KID 回傳 `null`。125 張的 FID 受樣本量影響，應以同一份 test manifest 比較。[Torch-Fidelity](https://torch-fidelity.readthedocs.io/en/v0.3.0/api.html) · [MS-SSIM](https://github.com/VainF/pytorch-msssim) · [BasicSR NIQE](https://github.com/XPixelGroup/BasicSR/blob/8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a/basicsr/metrics/niqe.py) · [FID 樣本量偏差](https://openaccess.thecvf.com/content_CVPR_2020/html/Chong_Effectively_Unbiased_FID_and_Inception_Score_and_Where_to_Find_Them_CVPR_2020_paper.html)
 
 訓練期間記錄 PSNR、SSIM 和 LPIPS。Spec 的 IFQA、DSL-FIQA 可對上述相同的 `sr/` 影像另外執行。團隊比較前應固定這兩項的 checkpoint、臉部前處理與逐張分數彙總方式。[IFQA 官方實作](https://github.com/AIM-SKKU/IFQA) · [DSL-FIQA 官方實作](https://github.com/DSL-FIQA/DSL-FIQA)
+
+## FFT 實驗
+
+`--fft` 在 SwinIR 的 `patch_unembed` 輸出與 `conv_after_body` 之間加上一條 FFT 殘差分支。先嚴格載入官方 checkpoint，再加入分支。分支以 `1×1 Conv` 將 180 個通道降到 32，在 FP32 執行 `rfft2`、實／虛部的通道混合與 `irfft2`，最後投影回 180 個通道。末層的權重與偏置初始化為 0。分支初始化使用獨立的 RNG 範圍，保留 baseline 的判別器初始化與訓練 RNG 順序。
+
+同一份 FFHQ manifest、原始權重與 loss 設定下跑 100,000 steps。驗證每 5,000 步執行，仍以 validation LPIPS 選 `best.pth`。續訓時在原訓練指令加 `--resume`。推論及評估會從 checkpoint 自動辨識 FFT 分支。
+
+```sh
+python baseline.py train --fft --data data/ffhq --run runs/fft --steps 100000 --batch 1 --workers 2 --val-every 5000
+python baseline.py evaluate --data data/ffhq --split test --weights runs/fft/best.pth --out outputs/fft
+```
+
+和 baseline 比較時使用同一個 `--tile`。FFT 在各次 forward 的整張特徵圖上運作，分塊推論時則以各塊作為變換範圍。可用 `python probe_batch.py --fft --max-batch 32` 測這個變體的 batch 上限。

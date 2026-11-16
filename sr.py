@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from PIL import Image, ImageOps
+from torch import nn
 
 
 SCALE = 4
@@ -39,6 +40,46 @@ def generator(checkpoint_layers=False):
 def load_generator(path):
     state = torch.load(path, map_location='cpu', weights_only=True)
     return state['params_ema']
+
+
+class FFTBranch(nn.Module):
+    def __init__(self, channels=180, width=32):
+        super().__init__()
+        self.reduce = nn.Conv2d(channels, width, 1)
+        self.mix = nn.Conv2d(2 * width, 2 * width, 1)
+        self.project = nn.Conv2d(width, channels, 1)
+        nn.init.zeros_(self.project.weight)
+        nn.init.zeros_(self.project.bias)
+
+    def forward(self, features):
+        reduced = self.reduce(features)
+        with torch.autocast(features.device.type, enabled=False):
+            spectrum = torch.fft.rfft2(reduced.float(), norm='ortho')
+            mixed = F.leaky_relu(self.mix(torch.cat((spectrum.real, spectrum.imag), dim=1)), 0.1)
+            real, imag = mixed.chunk(2, dim=1)
+            restored = torch.fft.irfft2(torch.complex(real, imag), s=reduced.shape[-2:], norm='ortho')
+        return self.project(restored.to(reduced.dtype)).to(features.dtype)
+
+
+def fft_residual(module, _inputs, features):
+    return features + module.fft_branch(features)
+
+
+def build_generator(weights, checkpoint_layers=False, fft=False):
+    model = generator(checkpoint_layers)
+    state = load_generator(weights)
+    has_fft = any(key.startswith('patch_unembed.fft_branch.') for key in state)
+    if not has_fft:
+        model.load_state_dict(state, strict=True)
+    if has_fft or fft:
+        # Keep the original initialization and the subsequent discriminator RNG sequence.
+        with torch.random.fork_rng(devices=[]):
+            branch = FFTBranch()
+        model.patch_unembed.add_module('fft_branch', branch)
+        model.patch_unembed.register_forward_hook(fft_residual)
+    if has_fft:
+        model.load_state_dict(state, strict=True)
+    return model
 
 
 def read_rgb(path):
