@@ -9,3 +9,5 @@ lpips==0.1.4
 DISTS-pytorch==0.1
 kagglehub==0.3.13
 filelock==3.16.1
+pytorch-msssim==1.0.0
+torch-fidelity==0.3.0

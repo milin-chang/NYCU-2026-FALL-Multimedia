@@ -85,11 +85,27 @@ python probe_batch.py --device cuda:0 --batch 1 --steps 10
 python baseline.py infer --weights runs/baseline/best.pth --input data/ffhq/test/lr --out outputs/inference --tile 128
 ```
 
-用同一批 test LR 比較原始 pretrained 與微調後的模型。輸出 SR PNG、逐張 CSV、平均分數及 checkpoint／manifest SHA-256。四項指標都使用完整的 8-bit RGB SR 和 HR，PSNR、SSIM 不切邊，LPIPS 使用 AlexNet，DISTS 使用官方 PyTorch 實作。
+用同一批 test LR 比較原始 pretrained 與微調後的模型。輸出 SR PNG、逐張 CSV、平均分數及 checkpoint／manifest SHA-256。舊環境先重新執行 `python -m pip install -r requirements.txt` 和 `python prepare.py assets`，以取得新增的評估套件與 BasicSR NIQE 參數。
 
 ```sh
 python baseline.py evaluate --data data/ffhq --split test --out outputs/pretrained --tile 128
 python baseline.py evaluate --data data/ffhq --split test --weights runs/baseline/best.pth --out outputs/finetuned --tile 128
 ```
 
-目前訓練期間記錄 PSNR、SSIM、LPIPS，測試時另外計算 DISTS。Spec 的 IFQA、DSL-FIQA 可對上述相同的 `sr/` 影像另外執行。團隊比較前應固定這兩項的 checkpoint、臉部前處理與逐張分數彙總方式。[IFQA 官方實作](https://github.com/AIM-SKKU/IFQA) · [DSL-FIQA 官方實作](https://github.com/DSL-FIQA/DSL-FIQA)
+若目錄中已有相同 checkpoint、manifest、split 與 tile 設定產生的報告，可加 `--reuse-sr` 補算指標並覆寫 CSV 和 JSON。此流程會沿用既有的 SR PNG 和前四項逐張分數。
+
+```sh
+python baseline.py evaluate --data data/ffhq --split test --out outputs/pretrained --reuse-sr
+python baseline.py evaluate --data data/ffhq --split test --weights runs/baseline/best.pth --out outputs/finetuned --reuse-sr
+```
+
+| 指標 | 設定 | 輸出 |
+| --- | --- | --- |
+| PSNR、SSIM、LPIPS、DISTS | 完整 8-bit RGB SR/HR 配對。PSNR 和 SSIM 不切邊，LPIPS 使用 AlexNet | 逐張與平均 |
+| MS-SSIM ↑ | 五尺度，8-bit RGB SR/HR 配對 | 逐張與平均 |
+| NIQE ↓ | BasicSR pristine 參數，SR 轉為 YCbCr 的 Y 通道 | 逐張與平均 |
+| FID、KID ↓ | Torch-Fidelity 相容 Inception-v3 的 2048 維特徵。比較整組 SR 與 HR，KID 使用 100 次子抽樣，每次 100 張或取可用的較小張數，seed 42 | 整組結果，KID 另存子抽樣標準差 |
+
+首次算 FID 或 KID 會下載 Inception-v3 權重。集合少於 2 張時，FID 和 KID 回傳 `null`。125 張的 FID 受樣本量影響，應以同一份 test manifest 比較。[Torch-Fidelity](https://torch-fidelity.readthedocs.io/en/v0.3.0/api.html) · [MS-SSIM](https://github.com/VainF/pytorch-msssim) · [BasicSR NIQE](https://github.com/XPixelGroup/BasicSR/blob/8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a/basicsr/metrics/niqe.py) · [FID 樣本量偏差](https://openaccess.thecvf.com/content_CVPR_2020/html/Chong_Effectively_Unbiased_FID_and_Inception_Score_and_Where_to_Find_Them_CVPR_2020_paper.html)
+
+訓練期間記錄 PSNR、SSIM 和 LPIPS。Spec 的 IFQA、DSL-FIQA 可對上述相同的 `sr/` 影像另外執行。團隊比較前應固定這兩項的 checkpoint、臉部前處理與逐張分數彙總方式。[IFQA 官方實作](https://github.com/AIM-SKKU/IFQA) · [DSL-FIQA 官方實作](https://github.com/DSL-FIQA/DSL-FIQA)

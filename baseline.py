@@ -7,6 +7,7 @@ import random
 import time
 from pathlib import Path
 from statistics import mean
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import torch
@@ -259,21 +260,48 @@ def train(args, device):
             append_log(log, 'validation', step=step, best_lpips=best, **scores)
 
 
+def evaluate_split(args, device):
+    from quality_metrics import extend_scores
+
+    rows = manifest(args.data)[args.split]
+    names = [row['name'] for row in rows]
+    metadata = {'split': args.split, 'images': len(rows), 'tile': args.tile,
+                'weights_sha256': sha256(args.weights), 'manifest_sha256': sha256(args.data / 'manifest.json')}
+    args.out.mkdir(parents=True, exist_ok=True)
+    with FileLock(args.out / '.evaluate.lock', timeout=0), TemporaryDirectory(dir=args.out) as temp:
+        stage = Path(temp)
+        if args.reuse_sr:
+            prior = json.loads((args.out / 'summary.json').read_text(encoding='utf-8'))
+            if any(prior.get(key) != value for key, value in metadata.items()):
+                raise ValueError('Existing report metadata differs from the requested weights, split, or tile.')
+            source = args.out
+        else:
+            model = generator().eval().to(device)
+            model.load_state_dict(load_generator(args.weights), strict=True)
+            evaluate(model, args.data, args.split, rows, perceptual_metrics(device, full=True),
+                     device, args.tile, stage)
+            del model
+            source = stage
+
+        per_image, scores = extend_scores(source, args.data / args.split / 'hr', names, device)
+        report = json.dumps({**metadata, **scores}, indent=2) + '\n'
+        (stage / 'summary.json').write_text(report, encoding='utf-8')
+        with (stage / 'per_image.csv').open('w', newline='', encoding='utf-8') as stream:
+            writer = csv.DictWriter(stream, fieldnames=list(per_image[0]))
+            writer.writeheader()
+            writer.writerows(per_image)
+        if not args.reuse_sr:
+            (args.out / 'sr').mkdir(exist_ok=True)
+            for name in names:
+                (stage / 'sr' / name).replace(args.out / 'sr' / name)
+        (stage / 'per_image.csv').replace(args.out / 'per_image.csv')
+        (stage / 'summary.json').replace(args.out / 'summary.json')
+    print(report, end='')
+
+
 def inference(args, device):
     model = generator().eval().to(device)
     model.load_state_dict(load_generator(args.weights), strict=True)
-    if args.command == 'evaluate':
-        rows = manifest(args.data)[args.split]
-        scores = evaluate(model, args.data, args.split, rows, perceptual_metrics(device, full=True),
-                          device, args.tile, args.out)
-        result = {'split': args.split, 'images': len(rows), 'tile': args.tile,
-                  'weights_sha256': sha256(args.weights), 'manifest_sha256': sha256(args.data / 'manifest.json'),
-                  **scores}
-        report = json.dumps(result, indent=2) + '\n'
-        (args.out / 'summary.json').write_text(report, encoding='utf-8')
-        print(report, end='')
-        return
-
     extensions = {'.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tif', '.tiff'}
     images = [args.input] if args.input.is_file() else sorted(
         path for path in args.input.iterdir() if path.is_file() and path.suffix.lower() in extensions)
@@ -318,6 +346,7 @@ def main():
     scoring.add_argument('--data', type=Path, default=DEFAULT_DATA)
     scoring.add_argument('--split', choices=('val', 'test'), default='test')
     scoring.add_argument('--out', type=Path, required=True)
+    scoring.add_argument('--reuse-sr', action='store_true', help='Extend an existing report using its saved SR PNGs')
     args = parser.parse_args()
     if args.tile < 0 or args.tile % WINDOW:
         parser.error('--tile must be 0 or a positive multiple of 8.')
@@ -330,6 +359,8 @@ def main():
         args.run.mkdir(parents=True, exist_ok=True)
         with FileLock(args.run / '.train.lock', timeout=0):
             train(args, device)
+    elif args.command == 'evaluate':
+        evaluate_split(args, device)
     else:
         inference(args, device)
 

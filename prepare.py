@@ -16,6 +16,8 @@ KAGGLE = 'arnaud58/flickrfaceshq-dataset-ffhq/versions/1'
 RAW = 'https://raw.githubusercontent.com'
 WEIGHT_SHA256 = 'b9afb61e65e04eb7f8aba5095d070bbe9af28df76acd0c9405aeb33b814bcfc6'
 DEFAULT_DATA = Path('data/ffhq')
+BASICSR_REF = '8d56e3a045f9fb3e1d8872f92ee4a4f07f886b0a'
+NIQE_ASSETS = Path('assets/upstream/basicsr_niqe')
 
 
 def sha256(path):
@@ -35,6 +37,17 @@ def download(url, path, expected=None):
     temporary.replace(path)
 
 
+def patch_asset(path, replacements):
+    contents = path.read_bytes()
+    patched = contents
+    for source, replacement in replacements:
+        patched = patched.replace(source, replacement)
+    if patched != contents:
+        temporary = path.with_suffix('.part')
+        temporary.write_bytes(patched)
+        temporary.replace(path)
+
+
 def assets():
     release = 'https://github.com/JingyunLiang/SwinIR/releases/download/v0.0'
     download(f'{release}/{WEIGHT.name}', WEIGHT, WEIGHT_SHA256)
@@ -51,12 +64,20 @@ def assets():
             download(f'{RAW}/{repo}/{ref}/{path}', directory / target)
     # KAIR uses a SciPy alias removed from current versions. NumPy is the original implementation.
     blindsr = Path('assets/upstream/kair/utils/utils_blindsr.py')
-    contents = blindsr.read_bytes()
-    patched = contents.replace(b'scipy.finfo(', b'np.finfo(')
-    if patched != contents:
-        temporary = blindsr.with_suffix('.part')
-        temporary.write_bytes(patched)
-        temporary.replace(blindsr)
+    patch_asset(blindsr, [(b'scipy.finfo(', b'np.finfo(')])
+
+    # Load the NIQE modules in isolation so they do not pull in BasicSR training extensions.
+    basicsr = f'{RAW}/XPixelGroup/BasicSR/{BASICSR_REF}'
+    for name in ('LICENSE.txt', 'basicsr/metrics/niqe.py', 'basicsr/metrics/niqe_pris_params.npz',
+                 'basicsr/metrics/metric_util.py', 'basicsr/utils/matlab_functions.py',
+                 'basicsr/utils/color_util.py', 'basicsr/utils/registry.py'):
+        download(f'{basicsr}/{name}', NIQE_ASSETS / Path(name).name)
+    patch_asset(NIQE_ASSETS / 'niqe.py', [
+        (b'from basicsr.metrics.metric_util import', b'from .metric_util import'),
+        (b'from basicsr.utils.matlab_functions import', b'from .matlab_functions import'),
+        (b'from basicsr.utils.registry import', b'from .registry import'),
+    ])
+    patch_asset(NIQE_ASSETS / 'metric_util.py', [(b'from basicsr.utils import', b'from .color_util import')])
     print(f'Assets ready: {WEIGHT} ({WEIGHT_SHA256})')
 
 
