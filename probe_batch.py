@@ -21,7 +21,7 @@ def trial(args, device):
     free, total = torch.cuda.mem_get_info(device)
     info = {'batch': args.trial, 'gpu': torch.cuda.get_device_name(device),
             'total_mib': round(total / MIB, 1), 'free_at_start_mib': round(free / MIB, 1),
-            'activation_checkpoint': args.activation_checkpoint, 'fft': args.fft}
+            'activation_checkpoint': args.activation_checkpoint, 'fft': args.fft, 'dwt': args.dwt}
     try:
         training = GanTraining(args, device)
         info['precision'] = 'bf16' if training.amp else 'fp32'
@@ -57,7 +57,7 @@ def run_trial(args, batch):
     flags = ['--device', args.device, '--steps', str(args.steps), '--weights', str(args.weights),
              '--trial', str(batch)]
     for enabled, flag in [(args.fp32, '--fp32'), (args.activation_checkpoint, '--activation-checkpoint'),
-                          (args.fft, '--fft')]:
+                          (args.fft, '--fft'), (args.dwt, '--dwt')]:
         if enabled:
             flags.append(flag)
     cmd = [sys.executable, str(Path(__file__).resolve()), *flags]
@@ -101,7 +101,9 @@ def main():
     parser.add_argument('--weights', type=Path, default=WEIGHT)
     parser.add_argument('--fp32', action='store_true')
     parser.add_argument('--activation-checkpoint', action='store_true')
-    parser.add_argument('--fft', action='store_true', help='Probe the FFT variant')
+    frequency = parser.add_mutually_exclusive_group()
+    frequency.add_argument('--fft', action='store_true', help='Probe the FFT variant')
+    frequency.add_argument('--dwt', action='store_true', help='Probe the Haar DWT variant')
     parser.add_argument('--trial', type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if any(value is not None and value < 1 for value in (args.batch, args.max_batch, args.steps, args.trial)):

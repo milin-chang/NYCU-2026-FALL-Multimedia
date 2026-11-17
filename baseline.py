@@ -147,7 +147,7 @@ class GanTraining:
         if device.type == 'cuda' and not args.fp32:
             with torch.cuda.device(device):
                 self.amp = torch.cuda.is_bf16_supported()
-        self.model = build_generator(args.weights, args.activation_checkpoint, args.fft).to(device)
+        self.model = build_generator(args.weights, args.activation_checkpoint, fft=args.fft, dwt=args.dwt).to(device)
         self.ema = copy.deepcopy(self.model).requires_grad_(False).eval()
         self.discriminator = define_D({'netD': {'net_type': 'discriminator_unet', 'in_nc': 3, 'base_nc': 64,
                                                 'init_type': 'orthogonal', 'init_bn_type': 'uniform',
@@ -204,6 +204,8 @@ def train(args, device):
               'ema_decay': training.ema_decay, 'loss_weights': [1., 1., 0.1]}
     if hasattr(training.model.patch_unembed, 'fft_branch'):
         config['fft'] = True
+    if hasattr(training.model.patch_unembed, 'dwt_branch'):
+        config['dwt'] = True
     model, ema, discriminator = training.model, training.ema, training.discriminator
     opt_g, opt_d = training.opt_g, training.opt_d
     metrics = perceptual_metrics(device)
@@ -337,7 +339,9 @@ def main():
     fit.add_argument('--val-every', type=int, default=5000)
     fit.add_argument('--activation-checkpoint', action='store_true')
     fit.add_argument('--fp32', action='store_true')
-    fit.add_argument('--fft', action='store_true', help='Add a zero-initialized FFT residual branch')
+    frequency = fit.add_mutually_exclusive_group()
+    frequency.add_argument('--fft', action='store_true', help='Add a zero-initialized FFT residual branch')
+    frequency.add_argument('--dwt', action='store_true', help='Add a zero-initialized Haar DWT residual branch')
     fit.add_argument('--resume', action='store_true')
     infer = commands.add_parser('infer', parents=[common])
     infer.add_argument('--input', type=Path, required=True)

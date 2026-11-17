@@ -122,3 +122,15 @@ python baseline.py evaluate --data data/ffhq --split test --weights runs/fft/bes
 ```
 
 和 baseline 比較時使用同一個 `--tile`。FFT 在各次 forward 的整張特徵圖上運作，分塊推論時則以各塊作為變換範圍。可用 `python probe_batch.py --fft --max-batch 32` 測這個變體的 batch 上限。
+
+## DWT 實驗
+
+`--dwt` 在同一位置加入單層 Haar 殘差分支。先將 180 個通道投影成 32 個通道，再以 FP32 分解成 `LL`、`LH`、`HL`、`HH` 四個子頻帶。分組 `1×1 Conv` 分別混合各頻帶的通道，接 LeakyReLU 與 IDWT，投影回 180 個通道後加回原特徵。分支末層以零初始化。DWT 新增 15,956 個參數，FFT 分支為 15,892 個。DWT 與 IDWT 用原生 PyTorch 運算，推論及評估從 checkpoint 自動載入對應架構。[二維 DWT 與 IDWT](https://pywavelets.readthedocs.io/en/latest/ref/2d-dwt-and-idwt.html)
+
+正式比較可沿用原先的 FFHQ manifest、官方權重、loss、100,000 steps 和 validation LPIPS 選模規則。只在續訓時加 `--resume`。
+
+```sh
+python probe_batch.py --dwt --max-batch 32
+python baseline.py train --dwt --data data/ffhq --run runs/dwt --steps 100000 --batch 1 --workers 2 --val-every 5000
+python baseline.py evaluate --data data/ffhq --split test --weights runs/dwt/best.pth --out outputs/dwt
+```

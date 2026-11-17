@@ -65,19 +65,70 @@ def fft_residual(module, _inputs, features):
     return features + module.fft_branch(features)
 
 
-def build_generator(weights, checkpoint_layers=False, fft=False):
+def haar_dwt2(features):
+    height, width = features.shape[-2:]
+    if height % 2 or width % 2:
+        features = F.pad(features, (0, width % 2, 0, height % 2), mode='replicate')
+    tl, tr, bl, br = F.pixel_unshuffle(features, 2).unflatten(1, (-1, 4)).unbind(2)
+    left_sum, right_sum = tl + bl, tr + br
+    left_diff, right_diff = tl - bl, tr - br
+    return torch.cat((left_sum + right_sum, left_diff + right_diff,
+                      left_sum - right_sum, left_diff - right_diff), dim=1) * 0.5
+
+
+def haar_idwt2(bands, size):
+    ll, lh, hl, hh = bands.chunk(4, dim=1)
+    left_sum, right_sum = ll + hl, ll - hl
+    left_diff, right_diff = lh + hh, lh - hh
+    cells = torch.stack((left_sum + left_diff, right_sum + right_diff,
+                         left_sum - left_diff, right_sum - right_diff), dim=2) * 0.5
+    height, width = size
+    return F.pixel_shuffle(cells.flatten(1, 2), 2)[..., :height, :width]
+
+
+class DWTBranch(nn.Module):
+    def __init__(self, channels=180, width=32):
+        super().__init__()
+        self.reduce = nn.Conv2d(channels, width, 1)
+        self.mix = nn.Conv2d(4 * width, 4 * width, 1, groups=4)
+        self.project = nn.Conv2d(width, channels, 1)
+        nn.init.zeros_(self.project.weight)
+        nn.init.zeros_(self.project.bias)
+
+    def forward(self, features):
+        reduced = self.reduce(features)
+        with torch.autocast(features.device.type, enabled=False):
+            bands = haar_dwt2(reduced.float())
+            mixed = F.leaky_relu(self.mix(bands), 0.1)
+            restored = haar_idwt2(mixed, reduced.shape[-2:])
+        return self.project(restored.to(reduced.dtype)).to(features.dtype)
+
+
+def dwt_residual(module, _inputs, features):
+    return features + module.dwt_branch(features)
+
+
+def build_generator(weights, checkpoint_layers=False, fft=False, dwt=False):
+    if fft and dwt:
+        raise ValueError('Select either FFT or DWT.')
     model = generator(checkpoint_layers)
     state = load_generator(weights)
-    has_fft = any(key.startswith('patch_unembed.fft_branch.') for key in state)
-    if not has_fft:
+    variants = {'fft': (FFTBranch, fft_residual), 'dwt': (DWTBranch, dwt_residual)}
+    saved = [name for name in variants if any(key.startswith(f'patch_unembed.{name}_branch.') for key in state)]
+    requested = 'fft' if fft else 'dwt' if dwt else None
+    if len(saved) > 1 or (saved and requested and requested != saved[0]):
+        raise ValueError('Checkpoint frequency branch does not match the requested architecture.')
+    if not saved:
         model.load_state_dict(state, strict=True)
-    if has_fft or fft:
+    variant = saved[0] if saved else requested
+    if variant:
+        branch_type, hook = variants[variant]
         # Keep the original initialization and the subsequent discriminator RNG sequence.
         with torch.random.fork_rng(devices=[]):
-            branch = FFTBranch()
-        model.patch_unembed.add_module('fft_branch', branch)
-        model.patch_unembed.register_forward_hook(fft_residual)
-    if has_fft:
+            branch = branch_type()
+        model.patch_unembed.add_module(f'{variant}_branch', branch)
+        model.patch_unembed.register_forward_hook(hook)
+    if saved:
         model.load_state_dict(state, strict=True)
     return model
 
