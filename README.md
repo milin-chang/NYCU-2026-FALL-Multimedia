@@ -6,6 +6,24 @@
 
 超解析（Super Resolution, SR）要從低解析度影像產生較高解析度影像。評估時，有些指標必須將輸出圖與高解析度原圖比較；另一些指標只看輸出圖。本範例固定影像處理方式，示範兩類指標的輸入、輸出與分數讀法，供後續評估模型時沿用。
 
+## 支援指標
+```python
+score("PSNR", "higher", lambda: piq.psnr(restored_tensor, reference_tensor), scores)
+score("SSIM", "higher", lambda: piq.ssim(restored_tensor, reference_tensor), scores)
+score("MS-SSIM", "higher", lambda: piq.multi_scale_ssim(restored_tensor, reference_tensor), scores)
+score("FSIM", "higher", lambda: piq.fsim(restored_tensor, reference_tensor, chromatic=False), scores)
+score("FSIMc", "higher", lambda: piq.fsim(restored_tensor, reference_tensor, chromatic=True), scores)
+score("GMSD", "lower", lambda: piq.gmsd(restored_tensor, reference_tensor), scores)
+score("MDSI", "lower", lambda: piq.mdsi(restored_tensor, reference_tensor), scores)
+score("VIFp", "higher", lambda: piq.vif_p(restored_tensor, reference_tensor), scores)
+score("SR-SIM", "higher", lambda: piq.srsim(restored_tensor, reference_tensor), scores)
+score("VSI", "higher", lambda: piq.vsi(restored_tensor, reference_tensor), scores)
+score("UQI", "higher", lambda: uqi(original, restored), scores)
+score("PIQE (original)", "lower", lambda: piqe(original)[0], scores, "HR only")
+score("PIQE (bicubic x4)", "lower", lambda: piqe(restored)[0], scores, "bicubic x4 only")
+score("VIF", "higher", lambda: pyiqa.create_metric("vif", device="cpu")(restored_tensor, reference_tensor), scores)
+```
+
 ## 實驗材料
 
 `example_photo/` 包含六張 [Flickr-Faces-HQ（FFHQ）資料集](https://github.com/NVlabs/ffhq-dataset)的 1024 × 1024 PNG：`00034.png`、`00036.png`、`00048.png`、`00051.png`、`00061.png`、`00077.png`。每張圖都作為該次比較的高解析度原圖（HR）。六張圖只用於展示計算流程，不代表 FFHQ 測試集的平均表現。
