@@ -147,7 +147,8 @@ class GanTraining:
         if device.type == 'cuda' and not args.fp32:
             with torch.cuda.device(device):
                 self.amp = torch.cuda.is_bf16_supported()
-        self.model = build_generator(args.weights, args.activation_checkpoint, fft=args.fft, dwt=args.dwt).to(device)
+        self.model = build_generator(args.weights, args.activation_checkpoint, fft=args.fft, dwt=args.dwt,
+                                     num_groups=args.num_groups, swinfr=args.swinfr).to(device)
         self.ema = copy.deepcopy(self.model).requires_grad_(False).eval()
         self.discriminator = define_D({'netD': {'net_type': 'discriminator_unet', 'in_nc': 3, 'base_nc': 64,
                                                 'init_type': 'orthogonal', 'init_bn_type': 'uniform',
@@ -206,6 +207,10 @@ def train(args, device):
         config['fft'] = True
     if hasattr(training.model.patch_unembed, 'dwt_branch'):
         config['dwt'] = True
+    if len(training.model.layers) != 6 or hasattr(training.model, 'pair_fusions'):
+        config['num_groups'] = len(training.model.layers) // 2
+    if hasattr(training.model, 'pair_fusions'):
+        config['swinfr'] = True
     model, ema, discriminator = training.model, training.ema, training.discriminator
     opt_g, opt_d = training.opt_g, training.opt_d
     metrics = perceptual_metrics(device)
@@ -342,6 +347,8 @@ def main():
     frequency = fit.add_mutually_exclusive_group()
     frequency.add_argument('--fft', action='store_true', help='Add a zero-initialized FFT residual branch')
     frequency.add_argument('--dwt', action='store_true', help='Add a zero-initialized Haar DWT residual branch')
+    frequency.add_argument('--swinfr', action='store_true', help='Use inner Fourier, pair fusion, and terminal DWT')
+    fit.add_argument('--num-groups', type=int, choices=(1, 2, 3), help='Keep the first 2, 4, or 6 RSTBs')
     fit.add_argument('--resume', action='store_true')
     infer = commands.add_parser('infer', parents=[common])
     infer.add_argument('--input', type=Path, required=True)

@@ -21,10 +21,12 @@ def trial(args, device):
     free, total = torch.cuda.mem_get_info(device)
     info = {'batch': args.trial, 'gpu': torch.cuda.get_device_name(device),
             'total_mib': round(total / MIB, 1), 'free_at_start_mib': round(free / MIB, 1),
-            'activation_checkpoint': args.activation_checkpoint, 'fft': args.fft, 'dwt': args.dwt}
+            'activation_checkpoint': args.activation_checkpoint, 'fft': args.fft, 'dwt': args.dwt or args.swinfr,
+            'swinfr': args.swinfr}
     try:
         training = GanTraining(args, device)
         info['precision'] = 'bf16' if training.amp else 'fp32'
+        info['num_groups'] = len(training.model.layers) // 2
         metrics = perceptual_metrics(device)
 
         lr = torch.rand(args.trial, 3, LR_PATCH, LR_PATCH, device=device)
@@ -57,9 +59,11 @@ def run_trial(args, batch):
     flags = ['--device', args.device, '--steps', str(args.steps), '--weights', str(args.weights),
              '--trial', str(batch)]
     for enabled, flag in [(args.fp32, '--fp32'), (args.activation_checkpoint, '--activation-checkpoint'),
-                          (args.fft, '--fft'), (args.dwt, '--dwt')]:
+                          (args.fft, '--fft'), (args.dwt, '--dwt'), (args.swinfr, '--swinfr')]:
         if enabled:
             flags.append(flag)
+    if args.num_groups is not None:
+        flags.extend(['--num-groups', str(args.num_groups)])
     cmd = [sys.executable, str(Path(__file__).resolve()), *flags]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, encoding='utf-8', errors='replace')
     result.check_returncode()
@@ -104,6 +108,8 @@ def main():
     frequency = parser.add_mutually_exclusive_group()
     frequency.add_argument('--fft', action='store_true', help='Probe the FFT variant')
     frequency.add_argument('--dwt', action='store_true', help='Probe the Haar DWT variant')
+    frequency.add_argument('--swinfr', action='store_true', help='Probe the SwinFR-inspired DWT variant')
+    parser.add_argument('--num-groups', type=int, choices=(1, 2, 3), help='Keep the first 2, 4, or 6 RSTBs')
     parser.add_argument('--trial', type=int, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if any(value is not None and value < 1 for value in (args.batch, args.max_batch, args.steps, args.trial)):

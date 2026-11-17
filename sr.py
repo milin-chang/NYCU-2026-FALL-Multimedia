@@ -27,14 +27,30 @@ def upstream(name):
         sys.path.insert(0, str(path))
 
 
-def generator(checkpoint_layers=False):
+def generator(checkpoint_layers=False, swinfr=False):
     upstream('swinir')
     from network_swinir import SwinIR
 
-    return SwinIR(upscale=SCALE, in_chans=3, img_size=LR_PATCH, window_size=WINDOW,
-                  img_range=1., depths=[6] * 6, embed_dim=180, num_heads=[6] * 6,
-                  mlp_ratio=2, upsampler='nearest+conv', resi_connection='1conv',
-                  use_checkpoint=checkpoint_layers)
+    class SwinIRWithPairFusion(SwinIR):
+        def forward_features(self, features):
+            height, width = features.shape[-2:]
+            size = (height, width)
+            tokens = self.patch_embed(features)
+            if self.ape:
+                tokens = tokens + self.absolute_pos_embed
+            tokens = self.pos_drop(tokens)
+            for index, fusion in enumerate(self.pair_fusions):
+                first, second = self.layers[2 * index], self.layers[2 * index + 1]
+                paired = second(first(tokens, size), size)
+                change = (paired - tokens).transpose(1, 2).reshape(features.shape)
+                tokens = paired + fusion(change).flatten(2).transpose(1, 2).to(paired.dtype)
+            return self.patch_unembed(self.norm(tokens), size)
+
+    model_type = SwinIRWithPairFusion if swinfr else SwinIR
+    return model_type(upscale=SCALE, in_chans=3, img_size=LR_PATCH, window_size=WINDOW,
+                      img_range=1., depths=[6] * 6, embed_dim=180, num_heads=[6] * 6,
+                      mlp_ratio=2, upsampler='nearest+conv', resi_connection='1conv',
+                      use_checkpoint=checkpoint_layers)
 
 
 def load_generator(path):
@@ -108,28 +124,68 @@ def dwt_residual(module, _inputs, features):
     return features + module.dwt_branch(features)
 
 
-def build_generator(weights, checkpoint_layers=False, fft=False, dwt=False):
-    if fft and dwt:
-        raise ValueError('Select either FFT or DWT.')
-    model = generator(checkpoint_layers)
+def inner_fourier(module, inputs, spatial):
+    return spatial + module.fft_branch(inputs[0]).to(spatial.dtype)
+
+
+def attach_pair_fusions(model):
+    model.pair_fusions = nn.ModuleList()
+    for layer in model.layers:
+        layer.conv.add_module('fft_branch', FFTBranch())
+        layer.conv.register_forward_hook(inner_fourier)
+    for _ in range(len(model.layers) // 2):
+        fusion = nn.Sequential(nn.Conv2d(180, 32, 1), nn.LeakyReLU(0.1),
+                               nn.Conv2d(32, 32, 3, padding=1), nn.LeakyReLU(0.1), nn.Conv2d(32, 180, 1))
+        nn.init.zeros_(fusion[-1].weight)
+        nn.init.zeros_(fusion[-1].bias)
+        model.pair_fusions.append(fusion)
+
+
+def trim_blocks(model, count):
+    if len(model.layers) != count:
+        model.layers = model.layers[:count]
+        model.num_layers = count
+
+
+def build_generator(weights, checkpoint_layers=False, fft=False, dwt=False, num_groups=None, swinfr=False):
+    if sum((fft, dwt, swinfr)) > 1:
+        raise ValueError('Select one of FFT, DWT, or SwinFR.')
     state = load_generator(weights)
+    indices = {int(key.split('.')[1]) for key in state if key.startswith('layers.')}
+    source_count = len(indices)
+    if source_count not in (2, 4, 6) or indices != set(range(source_count)):
+        raise ValueError('Expected a checkpoint with 2, 4, or 6 contiguous RSTBs.')
+    target_count = source_count if num_groups is None else 2 * num_groups
+    saved_swinfr = any(key.startswith('pair_fusions.') for key in state)
+    if target_count not in (2, 4, 6) or target_count > source_count or (saved_swinfr and target_count != source_count):
+        raise ValueError('Requested depth does not match the available pretrained blocks.')
+    model = generator(checkpoint_layers, swinfr=saved_swinfr or swinfr)
+    trim_blocks(model, source_count)
     variants = {'fft': (FFTBranch, fft_residual), 'dwt': (DWTBranch, dwt_residual)}
     saved = [name for name in variants if any(key.startswith(f'patch_unembed.{name}_branch.') for key in state)]
-    requested = 'fft' if fft else 'dwt' if dwt else None
-    if len(saved) > 1 or (saved and requested and requested != saved[0]):
+    requested = 'fft' if fft else 'dwt' if dwt or swinfr else None
+    if (len(saved) > 1 or (saved and requested and requested != saved[0])
+            or (saved_swinfr and (saved != ['dwt'] or dwt))):
         raise ValueError('Checkpoint frequency branch does not match the requested architecture.')
-    if not saved:
-        model.load_state_dict(state, strict=True)
-    variant = saved[0] if saved else requested
-    if variant:
-        branch_type, hook = variants[variant]
-        # Keep the original initialization and the subsequent discriminator RNG sequence.
-        with torch.random.fork_rng(devices=[]):
-            branch = branch_type()
-        model.patch_unembed.add_module(f'{variant}_branch', branch)
+
+    def attach_tail(name):
+        branch_type, hook = variants[name]
+        branch = branch_type()
+        model.patch_unembed.add_module(f'{name}_branch', branch)
         model.patch_unembed.register_forward_hook(hook)
-    if saved:
+
+    # Preserve the discriminator RNG sequence across experimental variants.
+    with torch.random.fork_rng(devices=[]):
+        if saved:
+            attach_tail(saved[0])
+        if saved_swinfr:
+            attach_pair_fusions(model)
         model.load_state_dict(state, strict=True)
+        trim_blocks(model, target_count)
+        if requested and not saved:
+            attach_tail(requested)
+        if swinfr and not saved_swinfr:
+            attach_pair_fusions(model)
     return model
 
 

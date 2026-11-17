@@ -134,3 +134,18 @@ python probe_batch.py --dwt --max-batch 32
 python baseline.py train --dwt --data data/ffhq --run runs/dwt --steps 100000 --batch 1 --workers 2 --val-every 5000
 python baseline.py evaluate --data data/ffhq --split test --weights runs/dwt/best.pth --out outputs/dwt
 ```
+
+## SwinFR + DWT 深度實驗
+
+`--num-groups 1` 先嚴格載入官方 SwinIR-M，保留第 1、2 個 RSTB 的完整權重與原本的 DropPath 設定，再接末端 DWTB。對照組使用 `--dwt`。實驗組使用 `--swinfr`，在每個保留 block 的原 Conv 旁加 Fourier 分支，並在每對 block 之後加 `z + ConvBranch(z - x)`，其中 `x`、`z` 是該對的輸入與輸出。新增分支末層皆為零初始化，兩組在 step 0 輸出一致。
+
+`--num-groups 2` 和 `--num-groups 3` 分別保留前 4 和前 6 個 RSTB。推論及評估從 checkpoint 自動辨識深度與分支。續訓時沿用訓練旗標並加 `--resume`。
+
+```sh
+python baseline.py train --dwt --num-groups 1 --data data/ffhq --run runs/dwt_n1 --steps 100000 --batch 1 --workers 2 --val-every 5000
+python baseline.py train --swinfr --num-groups 1 --data data/ffhq --run runs/swinfr_dwt_n1 --steps 100000 --batch 1 --workers 2 --val-every 5000
+python baseline.py evaluate --data data/ffhq --split test --weights runs/dwt_n1/best.pth --out outputs/dwt_n1
+python baseline.py evaluate --data data/ffhq --split test --weights runs/swinfr_dwt_n1/best.pth --out outputs/swinfr_dwt_n1
+```
+
+兩個 `n=1` 版本的生成器分別有 4,263,675 和 4,316,439 個參數。要比較 GPU 訓練步速，可分別用 `python probe_batch.py --dwt --num-groups 1 --batch 1` 和 `python probe_batch.py --swinfr --num-groups 1 --batch 1`。
