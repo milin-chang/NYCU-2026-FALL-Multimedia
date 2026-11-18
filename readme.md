@@ -22,7 +22,7 @@ FFHQ HR → bicubic x4 縮小成 LR → 視實驗加入雜訊 → SwinIR-S → S
 - `src/`：模型、資料準備、訓練及評估程式。
 - `spec/`：固定的實驗設定與資料切分 manifest。
 - `reports/`：評分結果與視覺化。
-- `runs/`：訓練紀錄、權重與測試輸出，保留在本機。
+- `runs/`：訓練紀錄、權重與測試輸出，納入此分支。
 - `metrics/`：獨立的範例照片品質指標工具。
 
 下一階段依[開會紀錄](https://github.com/milin-chang/NYCU-2026-FALL-Multimedia/discussions/2)討論是否加入 degradation-aware SR，根據色偏、雜訊與模糊條件調整模型。

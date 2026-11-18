@@ -32,7 +32,7 @@
 同一名稱串起三個資料夾：
 
 - `spec/<名稱>.json`：固定的資料、模型、超參數與評分規格。
-- `runs/<名稱>/`：`events.jsonl`、`status.json`、`checkpoints/last.pth`、`checkpoints/best.pth`、每次驗證的 `per_image.csv` 與 `summary.json`，以及最終測試的 CSV、摘要和 50 張 SR PNG。此資料夾較大，Git 已忽略。
+- `runs/<名稱>/`：`events.jsonl`、`status.json`、`checkpoints/last.pth`、`checkpoints/best.pth`、每次驗證的 `per_image.csv` 與 `summary.json`，以及最終測試的 CSV、摘要和 50 張 SR PNG。此分支包含這些檔案，clone 時需預留空間。
 - `reports/<名稱>/`：完成後的 `README.md` 與 `results.json`，可提交到 Git。
 
 查看執行進度：

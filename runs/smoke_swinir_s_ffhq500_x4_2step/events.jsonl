@@ -1,0 +1,8 @@
+{"time_utc": "2026-11-17T19:14:32+00:00", "event": "start", "step": 0, "total_steps": 2, "gpu": "NVIDIA GeForce RTX 5070 Ti", "parameters": 929628}
+{"time_utc": "2026-11-17T19:14:48+00:00", "event": "train", "step": 1, "loss": 0.3869420886039734, "lr": 1.25e-05, "elapsed_s": 16.42}
+{"time_utc": "2026-11-17T19:15:03+00:00", "event": "resume", "step": 1, "total_steps": 2, "gpu": "NVIDIA GeForce RTX 5070 Ti", "parameters": 929628}
+{"time_utc": "2026-11-17T19:15:19+00:00", "event": "train", "step": 2, "loss": 0.28119581937789917, "lr": 1.25e-05, "elapsed_s": 16.38}
+{"time_utc": "2026-11-17T19:15:21+00:00", "event": "validation", "step": 2, "psnr": 8.131206512451172, "ssim": 0.4304654598236084, "lpips": 1.0175691843032837, "dists": 0.7224040627479553, "ms_ssim": 0.1815875619649887, "fsim": 0.6826342940330505, "vifp": 0.008182051591575146, "uqi": 0.529309434027116}
+{"time_utc": "2026-11-17T19:15:21+00:00", "event": "best", "step": 2, "psnr": 8.131206512451172}
+{"time_utc": "2026-11-17T19:15:21+00:00", "event": "checkpoint", "step": 2, "best_val_psnr": 8.131206512451172}
+{"time_utc": "2026-11-17T19:15:22+00:00", "event": "complete", "step": 2, "best_step": 2, "psnr": 8.11789321899414, "ssim": 0.3709305226802826, "lpips": 0.9447360038757324, "dists": 0.721326470375061, "ms_ssim": 0.10092076659202576, "fsim": 0.6557624340057373, "vifp": 0.011422736570239067, "uqi": 0.517241057012331}
