@@ -1,0 +1,90 @@
+{
+  "name": "swinir_s_ffhq500_x4_seed42_150k_20261118",
+  "created_utc": "2026-11-17T19:16:24+00:00",
+  "data": {
+    "dataset": "FFHQ aligned RGB PNG",
+    "images": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_1024",
+    "lr_images": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_lightweight_x4\\lr",
+    "manifest": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_split_seed42_500.json",
+    "manifest_sha256": "573591a86dcf6b72f58534a6baa683acf0c12a6dab56635e3cf7223b1b110937",
+    "lr_metadata_sha256": "2e1f74df68eb525e117242c180f7459aceb91dd4aeae765d7b884bb10c5a2895",
+    "counts": {
+      "train": 400,
+      "val": 50,
+      "test": 50
+    },
+    "seed": 42,
+    "degradation": "KAIR imresize_np bicubic x4 with antialiasing; 8-bit LR PNG",
+    "train_patch_lr": 64,
+    "train_patch_hr": 256,
+    "train_augment_modes": 8
+  },
+  "model": {
+    "name": "Lightweight SwinIR-S x4",
+    "source_sha256": "c1457d66ba482c7df747f0e25af948fe6fa7352c1cd4cba3dd87d41f5535689b",
+    "kair_commit": "fc1732f4a4514e42ce15e5b3a1e18c828af47a1e",
+    "rstb": 4,
+    "stl_per_rstb": 6,
+    "embed_dim": 60,
+    "attention_heads": 6,
+    "window_size": 8,
+    "upsampler": "pixelshuffledirect",
+    "initialization": "random, no pretrained generator weights"
+  },
+  "train": {
+    "steps": 150000,
+    "batch": 1,
+    "precision": "bf16",
+    "optimizer": "Adam",
+    "learning_rate": 0.0002,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.0,
+    "scheduler": "MultiStepLR",
+    "milestones": [
+      75000,
+      120000,
+      135000,
+      142500
+    ],
+    "gamma": 0.5,
+    "loss": "L1 pixel only",
+    "ema_decay": 0.999,
+    "log_every": 500,
+    "save_every": 5000,
+    "val_every": 15000,
+    "val_limit": null,
+    "test_limit": null,
+    "best_checkpoint_by": "highest validation PSNR"
+  },
+  "evaluation": {
+    "metrics": {
+      "psnr": "higher",
+      "ssim": "higher",
+      "lpips": "lower",
+      "dists": "lower",
+      "ms_ssim": "higher",
+      "fsim": "higher",
+      "vifp": "higher",
+      "uqi": "higher"
+    },
+    "image_format": "RGB uint8 PNG; metrics on saved SR pixels versus HR",
+    "psnr_ssim_ms_ssim_fsim_vifp": "piq==0.8.0",
+    "lpips": "lpips==0.1.4; AlexNet v0.1; inputs [-1,1]",
+    "dists": "dists-pytorch==0.1; inputs [0,1]",
+    "uqi": "sewar==0.4.10; uint8 RGB",
+    "validation": "50 val images at each val interval",
+    "test": "50 test images once, using best validation checkpoint",
+    "metrics_used_for_gradient": false
+  },
+  "software": {
+    "torch": "2.11.0+cu128",
+    "cuda_runtime": "12.8",
+    "piq": "0.8.0",
+    "lpips_package": "__init__.py",
+    "dists_package": "__init__.py",
+    "sewar_package": "__init__.py"
+  }
+}

@@ -1,4 +1,11 @@
-.venv/
-.tools/
+/dataset/
+/runs/
 __pycache__/
 *.pyc
+/metrics/.tools/
+/metrics/.venv/
+/src/.venv/
+/src/.uv-cache/
+/src/.mpl-cache/
+/src/upstream/
+/src/runs/

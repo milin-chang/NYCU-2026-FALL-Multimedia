@@ -1,0 +1,41 @@
+{
+  "name": "smoke_swinir_s_ffhq500_highfreq_s8_2step",
+  "completed_utc": "2026-11-17T23:14:28+00:00",
+  "best_step": 2,
+  "best_by": "validation PSNR",
+  "validation": [
+    {
+      "step": 2,
+      "metrics": {
+        "psnr": 8.127564430236816,
+        "ssim": 0.4054185748100281,
+        "lpips": 0.9958781599998474,
+        "dists": 0.7202671766281128,
+        "ms_ssim": 0.17777425050735474,
+        "fsim": 0.6853921413421631,
+        "vifp": 0.007987714372575283,
+        "uqi": 0.5290895666396943
+      }
+    }
+  ],
+  "test": {
+    "psnr": 8.112578392028809,
+    "ssim": 0.3545452952384949,
+    "lpips": 0.9568052291870117,
+    "dists": 0.7205690145492554,
+    "ms_ssim": 0.09934042394161224,
+    "fsim": 0.662755012512207,
+    "vifp": 0.010855901055037975,
+    "uqi": 0.5169741803830427
+  },
+  "metric_directions": {
+    "psnr": "higher",
+    "ssim": "higher",
+    "lpips": "lower",
+    "dists": "lower",
+    "ms_ssim": "higher",
+    "fsim": "higher",
+    "vifp": "higher",
+    "uqi": "higher"
+  }
+}

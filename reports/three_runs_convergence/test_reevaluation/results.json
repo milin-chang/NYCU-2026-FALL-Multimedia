@@ -1,0 +1,100 @@
+{
+  "completed_utc": "2026-11-18T04:00:40+00:00",
+  "split": "FFHQ-500 seed 42 test",
+  "images_per_run": 50,
+  "inference_weights": "EMA state in each best.pth",
+  "precision": "CUDA BF16",
+  "metric_directions": {
+    "psnr": "higher",
+    "ssim": "higher",
+    "lpips": "lower",
+    "dists": "lower",
+    "ms_ssim": "higher",
+    "fsim": "higher",
+    "vifp": "higher",
+    "uqi": "higher"
+  },
+  "runs": [
+    {
+      "key": "bicubic",
+      "run": "swinir_s_ffhq500_x4_seed42_150k_20261118",
+      "test_images": 50,
+      "checkpoint": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\runs\\swinir_s_ffhq500_x4_seed42_150k_20261118\\checkpoints\\best.pth",
+      "checkpoint_sha256": "077cb4b37f4b7be11f66d15c72d283768f109720311657f45435a6f2472027f9",
+      "metrics": {
+        "psnr": 34.68644401550293,
+        "ssim": 0.9975167739391327,
+        "lpips": 0.21302369058132173,
+        "dists": 0.11462382793426514,
+        "ms_ssim": 0.9815747046470642,
+        "fsim": 0.998908839225769,
+        "vifp": 0.5491587781906128,
+        "uqi": 0.9896999506687286
+      },
+      "maximum_per_image_difference_from_original": {
+        "psnr": 0.0,
+        "ssim": 0.0,
+        "lpips": 0.0,
+        "dists": 0.0,
+        "ms_ssim": 0.0,
+        "fsim": 0.0,
+        "vifp": 0.0,
+        "uqi": 0.0
+      }
+    },
+    {
+      "key": "highfreq",
+      "run": "swinir_s_ffhq500_x4_highfreq_s8_seed42_100k_20261118",
+      "test_images": 50,
+      "checkpoint": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\runs\\swinir_s_ffhq500_x4_highfreq_s8_seed42_100k_20261118\\checkpoints\\best.pth",
+      "checkpoint_sha256": "1533a277976448d1142afdf4d9b5736ce519ef2d2b207727db08074fdf32554b",
+      "metrics": {
+        "psnr": 32.660912590026854,
+        "ssim": 0.9652000939846039,
+        "lpips": 0.2962193700671196,
+        "dists": 0.17754151701927184,
+        "ms_ssim": 0.9540892481803894,
+        "fsim": 0.9844886589050293,
+        "vifp": 0.40263268649578093,
+        "uqi": 0.9828099387605176
+      },
+      "maximum_per_image_difference_from_original": {
+        "psnr": 0.0,
+        "ssim": 0.0,
+        "lpips": 0.0,
+        "dists": 0.0,
+        "ms_ssim": 0.0,
+        "fsim": 0.0,
+        "vifp": 0.0,
+        "uqi": 0.0
+      }
+    },
+    {
+      "key": "masked",
+      "run": "swinir_s_ffhq500_x4_masked_s16_seed42_100k_20261118",
+      "test_images": 50,
+      "checkpoint": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\runs\\swinir_s_ffhq500_x4_masked_s16_seed42_100k_20261118\\checkpoints\\best.pth",
+      "checkpoint_sha256": "dc85f4e4682ed44d573c59b03bb4cf7ca10a1b98b52263696ba8078cf0838c40",
+      "metrics": {
+        "psnr": 32.835225372314454,
+        "ssim": 0.9707628679275513,
+        "lpips": 0.27680654495954515,
+        "dists": 0.1537088668346405,
+        "ms_ssim": 0.9594041192531586,
+        "fsim": 0.9842558538913727,
+        "vifp": 0.45024078905582426,
+        "uqi": 0.9860138351781869
+      },
+      "maximum_per_image_difference_from_original": {
+        "psnr": 0.0,
+        "ssim": 0.0,
+        "lpips": 0.0,
+        "dists": 0.0,
+        "ms_ssim": 0.0,
+        "fsim": 0.0,
+        "vifp": 0.0,
+        "uqi": 0.0
+      }
+    }
+  ]
+}

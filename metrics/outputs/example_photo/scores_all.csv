@@ -1,0 +1,121 @@
+image,metric,score,direction,images,status
+00034.png,PSNR,36.876869201660156,higher,HR vs bicubic x4,ok
+00034.png,SSIM,0.992152988910675,higher,HR vs bicubic x4,ok
+00034.png,MS-SSIM,0.9757028222084045,higher,HR vs bicubic x4,ok
+00034.png,FSIM,0.9972373247146606,higher,HR vs bicubic x4,ok
+00034.png,FSIMc,0.9972249865531921,higher,HR vs bicubic x4,ok
+00034.png,GMSD,0.04726988449692726,lower,HR vs bicubic x4,ok
+00034.png,MDSI,0.15866538882255554,lower,HR vs bicubic x4,ok
+00034.png,VIFp,0.4192497730255127,higher,HR vs bicubic x4,ok
+00034.png,SR-SIM,0.9979047775268555,higher,HR vs bicubic x4,ok
+00034.png,VSI,0.9986764192581177,higher,HR vs bicubic x4,ok
+00034.png,UQI,0.9916264373160398,higher,HR vs bicubic x4,ok
+00034.png,PIQE (original),14.479897170858413,lower,HR only,ok
+00034.png,PIQE (bicubic x4),72.50467519019953,lower,bicubic x4 only,ok
+00034.png,VIF,0.3202570676803589,higher,HR vs bicubic x4,ok
+00034.png,CW-SSIM,0.9902165307377192,higher,HR vs bicubic x4,ok
+00034.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00034.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00034.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00034.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00034.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00036.png,PSNR,28.762928009033203,higher,HR vs bicubic x4,ok
+00036.png,SSIM,0.9896259903907776,higher,HR vs bicubic x4,ok
+00036.png,MS-SSIM,0.9649786949157715,higher,HR vs bicubic x4,ok
+00036.png,FSIM,0.9933847188949585,higher,HR vs bicubic x4,ok
+00036.png,FSIMc,0.9932575225830078,higher,HR vs bicubic x4,ok
+00036.png,GMSD,0.08767279982566833,lower,HR vs bicubic x4,ok
+00036.png,MDSI,0.20934414863586426,lower,HR vs bicubic x4,ok
+00036.png,VIFp,0.43814560770988464,higher,HR vs bicubic x4,ok
+00036.png,SR-SIM,0.9939662218093872,higher,HR vs bicubic x4,ok
+00036.png,VSI,0.995766818523407,higher,HR vs bicubic x4,ok
+00036.png,UQI,0.9869885503398876,higher,HR vs bicubic x4,ok
+00036.png,PIQE (original),21.670962851552662,lower,HR only,ok
+00036.png,PIQE (bicubic x4),85.44273194194426,lower,bicubic x4 only,ok
+00036.png,VIF,0.3086724281311035,higher,HR vs bicubic x4,ok
+00036.png,CW-SSIM,0.9994918925411878,higher,HR vs bicubic x4,ok
+00036.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00036.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00036.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00036.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00036.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00048.png,PSNR,35.458431243896484,higher,HR vs bicubic x4,ok
+00048.png,SSIM,0.9927315711975098,higher,HR vs bicubic x4,ok
+00048.png,MS-SSIM,0.9762067794799805,higher,HR vs bicubic x4,ok
+00048.png,FSIM,0.9973302483558655,higher,HR vs bicubic x4,ok
+00048.png,FSIMc,0.9973036646842957,higher,HR vs bicubic x4,ok
+00048.png,GMSD,0.046260956674814224,lower,HR vs bicubic x4,ok
+00048.png,MDSI,0.15677320957183838,lower,HR vs bicubic x4,ok
+00048.png,VIFp,0.45134273171424866,higher,HR vs bicubic x4,ok
+00048.png,SR-SIM,0.9982256889343262,higher,HR vs bicubic x4,ok
+00048.png,VSI,0.9984967112541199,higher,HR vs bicubic x4,ok
+00048.png,UQI,0.9963039783829793,higher,HR vs bicubic x4,ok
+00048.png,PIQE (original),13.750204535376904,lower,HR only,ok
+00048.png,PIQE (bicubic x4),78.18214952498604,lower,bicubic x4 only,ok
+00048.png,VIF,0.34386444091796875,higher,HR vs bicubic x4,ok
+00048.png,CW-SSIM,0.9952816556210875,higher,HR vs bicubic x4,ok
+00048.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00048.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00048.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00048.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00048.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00051.png,PSNR,35.38633728027344,higher,HR vs bicubic x4,ok
+00051.png,SSIM,0.9952800869941711,higher,HR vs bicubic x4,ok
+00051.png,MS-SSIM,0.982236921787262,higher,HR vs bicubic x4,ok
+00051.png,FSIM,0.9971606731414795,higher,HR vs bicubic x4,ok
+00051.png,FSIMc,0.9971351623535156,higher,HR vs bicubic x4,ok
+00051.png,GMSD,0.049318064004182816,lower,HR vs bicubic x4,ok
+00051.png,MDSI,0.1642882525920868,lower,HR vs bicubic x4,ok
+00051.png,VIFp,0.447024941444397,higher,HR vs bicubic x4,ok
+00051.png,SR-SIM,0.9978677034378052,higher,HR vs bicubic x4,ok
+00051.png,VSI,0.998224139213562,higher,HR vs bicubic x4,ok
+00051.png,UQI,0.9983452622106547,higher,HR vs bicubic x4,ok
+00051.png,PIQE (original),9.845726958456082,lower,HR only,ok
+00051.png,PIQE (bicubic x4),84.66998585625066,lower,bicubic x4 only,ok
+00051.png,VIF,0.3652973175048828,higher,HR vs bicubic x4,ok
+00051.png,CW-SSIM,0.9973810808950196,higher,HR vs bicubic x4,ok
+00051.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00051.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00051.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00051.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00051.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00061.png,PSNR,31.29124641418457,higher,HR vs bicubic x4,ok
+00061.png,SSIM,0.988490879535675,higher,HR vs bicubic x4,ok
+00061.png,MS-SSIM,0.961010754108429,higher,HR vs bicubic x4,ok
+00061.png,FSIM,0.9953433871269226,higher,HR vs bicubic x4,ok
+00061.png,FSIMc,0.9953253865242004,higher,HR vs bicubic x4,ok
+00061.png,GMSD,0.07711230963468552,lower,HR vs bicubic x4,ok
+00061.png,MDSI,0.1929118037223816,lower,HR vs bicubic x4,ok
+00061.png,VIFp,0.3713211119174957,higher,HR vs bicubic x4,ok
+00061.png,SR-SIM,0.9958508610725403,higher,HR vs bicubic x4,ok
+00061.png,VSI,0.9969518780708313,higher,HR vs bicubic x4,ok
+00061.png,UQI,0.9981066727540083,higher,HR vs bicubic x4,ok
+00061.png,PIQE (original),11.392994909772142,lower,HR only,ok
+00061.png,PIQE (bicubic x4),85.4174205361164,lower,bicubic x4 only,ok
+00061.png,VIF,0.28457990288734436,higher,HR vs bicubic x4,ok
+00061.png,CW-SSIM,0.9990872194474502,higher,HR vs bicubic x4,ok
+00061.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00061.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00061.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00061.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00061.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00077.png,PSNR,35.93777847290039,higher,HR vs bicubic x4,ok
+00077.png,SSIM,0.9944779276847839,higher,HR vs bicubic x4,ok
+00077.png,MS-SSIM,0.982498824596405,higher,HR vs bicubic x4,ok
+00077.png,FSIM,0.9979817271232605,higher,HR vs bicubic x4,ok
+00077.png,FSIMc,0.9979498982429504,higher,HR vs bicubic x4,ok
+00077.png,GMSD,0.04462343454360962,lower,HR vs bicubic x4,ok
+00077.png,MDSI,0.1539974957704544,lower,HR vs bicubic x4,ok
+00077.png,VIFp,0.5241879224777222,higher,HR vs bicubic x4,ok
+00077.png,SR-SIM,0.998295247554779,higher,HR vs bicubic x4,ok
+00077.png,VSI,0.9987224340438843,higher,HR vs bicubic x4,ok
+00077.png,UQI,0.9937876408820058,higher,HR vs bicubic x4,ok
+00077.png,PIQE (original),12.242641350724409,lower,HR only,ok
+00077.png,PIQE (bicubic x4),88.90168240171317,lower,bicubic x4 only,ok
+00077.png,VIF,0.40967145562171936,higher,HR vs bicubic x4,ok
+00077.png,CW-SSIM,0.9985380759121305,higher,HR vs bicubic x4,ok
+00077.png,IFC,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00077.png,SPSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00077.png,RFSIM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00077.png,VSNR-FR,,higher,HR vs bicubic x4,not_computed: no verified implementation selected
+00077.png,GSM,,higher,HR vs bicubic x4,not_computed: no verified implementation selected

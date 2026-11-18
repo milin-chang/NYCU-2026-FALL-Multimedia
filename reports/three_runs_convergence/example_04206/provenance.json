@@ -1,0 +1,44 @@
+{
+  "test_image": "04206.png",
+  "hr": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_1024\\04206.png",
+  "inference_weights": "EMA state from each best.pth",
+  "precision": "CUDA BF16",
+  "detail_crop_xyxy": [
+    256,
+    256,
+    768,
+    768
+  ],
+  "runs": [
+    {
+      "key": "bicubic",
+      "label": "Bicubic only",
+      "run": "swinir_s_ffhq500_x4_seed42_150k_20261118",
+      "checkpoint_step": 150000,
+      "checkpoint_sha256": "077cb4b37f4b7be11f66d15c72d283768f109720311657f45435a6f2472027f9",
+      "input": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_lightweight_x4\\lr\\04206.png",
+      "output": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\reports\\three_runs_convergence\\example_04206\\bicubic_sr_1024.png",
+      "matches_saved_test_output": true
+    },
+    {
+      "key": "highfreq",
+      "label": "High-frequency noise",
+      "run": "swinir_s_ffhq500_x4_highfreq_s8_seed42_100k_20261118",
+      "checkpoint_step": 100000,
+      "checkpoint_sha256": "1533a277976448d1142afdf4d9b5736ce519ef2d2b207727db08074fdf32554b",
+      "input": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_lightweight_x4_highfreq_s8\\lr\\04206.png",
+      "output": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\reports\\three_runs_convergence\\example_04206\\highfreq_sr_1024.png",
+      "matches_saved_test_output": true
+    },
+    {
+      "key": "masked",
+      "label": "Masked noise",
+      "run": "swinir_s_ffhq500_x4_masked_s16_seed42_100k_20261118",
+      "checkpoint_step": 100000,
+      "checkpoint_sha256": "dc85f4e4682ed44d573c59b03bb4cf7ca10a1b98b52263696ba8078cf0838c40",
+      "input": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\dataset\\ffhq_lightweight_x4_masked_s16\\lr\\04206.png",
+      "output": "C:\\uwuowoawa\\2_colledge\\115-1\\multimedia_final_project\\reports\\three_runs_convergence\\example_04206\\masked_sr_1024.png",
+      "matches_saved_test_output": true
+    }
+  ]
+}
